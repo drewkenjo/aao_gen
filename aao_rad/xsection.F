@@ -54,11 +54,9 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c
 c      if (q2.ge.1) sigma_u = sigma_u*(0.0918*q2**2.1485)
 c      if (q2.ge.1) sigma_p = sigma_p*(0.0918*q2**2.1485)
-       sigma_u=sigma_u * ratio(q2)
-       sigma_p=sigma_p * ratio(q2)
-
+      sigma_u=sigma_u * ratio(q2)
       sigma_p  = fkt*vltp*sigma_ltp*sin(phicm_rad)
-
+      sigma_p  = sigma_p * ratio(q2)
       sigma_0  = sigma_u + e_hel*sigma_p
 c
       asym_ltp = sigma_p/sigma_u
