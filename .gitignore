@@ -13,3 +13,6 @@ output/*
 submission_warehouse/*
 __pycache__
 .DS_Store
+*.aux
+*.log
+tex/*.out
