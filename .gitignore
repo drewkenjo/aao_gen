@@ -2,10 +2,7 @@ build
 *~
 depends
 *.root
-<<<<<<< HEAD
-=======
 *.hbook
->>>>>>> c8ce46245adc1f72b53d0d331d6cf9abc0abe80c
 *.rz
 *.out
 *.lund
@@ -15,3 +12,4 @@ depends
 output/*
 submission_warehouse/*
 __pycache__
+.DS_Store
