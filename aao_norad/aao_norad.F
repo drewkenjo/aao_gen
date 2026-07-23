@@ -114,8 +114,17 @@ c     fmcall:   scale factor for sigm_max
 c     boso:	1=bos output, 0=no bos output
 c     seed_source: 0= use unix timestamp from machine time to generate seed, otherwise use given value as seed
 
-      read(5,*) phys,flag_ehel,npart,epirea,ebeam,q2_min,q2_max,ep_min,
-     1ep_max,nmax,fmcall,boso,seed_source
+      read(5,*) phys
+      read(5,*) flag_ehel
+      read(5,*) npart
+      read(5,*) epirea
+      read(5,*) ebeam
+      read(5,*) q2_min,q2_max
+      read(5,*) ep_min,ep_max
+      read(5,*) nmax
+      read(5,*) fmcall
+      read(5,*) boso
+      read(5,*) seed_source
     
       if (npart .ne. 3) npart=2
 
