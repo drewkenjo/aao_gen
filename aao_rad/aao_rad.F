@@ -1550,11 +1550,17 @@ c     terms
          sigma=0.1e-30
          return
 
+c     The relative phi-modulation must be normalized to the
+c     phi-independent photoabsorption cross section sigma_T+eps*sigma_L
+c     (= sigu+epeps*sigl), NOT to sigf, which carries the Mo-Tsai
+c     W1/W2 kinematic factors. Dividing by sigf distorted the cos(2phi)
+c     and cos(phi) modulation of the radiative tail: RC(phi) acquired
+c     an artificial cos(2phi) structure absent in EXCLURAD and in the
+c     published CLAS pi0 radiative corrections.
  123   sigf=sigf * (1.+(epeps*sigt*cos(epphi*pi/90.)
      &  +sqrt(epeps*(1.+epeps)/2)*sigi*cos(epphi*pi/180.)
      &  +ehel*sqrt(epeps*(1.-epeps)/2)*sigip*sin(epphi*pi/180.))
-c     &  /(sigu+epeps*sigl))
-     &  /sigf)
+     &  /(sigu+epeps*sigl))
 
        if (sigf .gt. 0.)go to 124
          write(6,*)' sigma-5: sigf =',sigf
