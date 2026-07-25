@@ -16,3 +16,7 @@ __pycache__
 *.aux
 *.log
 tex/*.out
+tools/aao_rc_point
+tools/*.txt
+tools/*.inp
+tools/*.log
