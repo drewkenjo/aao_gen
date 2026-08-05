@@ -1265,7 +1265,13 @@ C         print *,'Event to be written'
 Cvpk         call bos_out	! Pack the BOS banks and write out to file   
          nevent	= nevent+1
 C         print *,'Events=',nevent,nprint
-         goto 124
+c     vpk 2026: was "goto 124", which jumped past the enddo and wrote each
+c     event only once, ignoring mcall. That under-weighted the radiative
+c     tail (sigr > sigr_max, mcall >= 2) by ~2-4%. Route to label 24 (the
+c     loop-continue used by the ep_min rejection) so all mcall copies are
+c     written and the sample is unbiased; the printed sigma was never
+c     affected (it uses sig_tot, accumulated before this loop).
+         goto 24
  24      continue
        enddo
 
