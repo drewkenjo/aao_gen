@@ -64,8 +64,9 @@ c        branch below leaves data_file empty and read_sf_file hangs, which
 c        is why aao eta runs never produced events.  For eta use the DVMP
 c        parameterization EVERYWHERE (no threshold matching): the fit is
 c        the same March-2021 table the other generators use, and eta
-c        production is studied above the resonance region anyway.
-         if(w.gt.1.8 .and. (opt2.eq.1 .or. opt2.eq.5)) then
+c        production is studied above the resonance region anyway.  VPK:
+c        DVMP applies at ALL W for eta -- no threshold, no zeroing.
+         if((w.gt.1.8 .and. opt2.eq.1) .or. opt2.eq.5) then
            amp2 = 0.93827**2
            amu2 = mesonmass**2
            q2_dummy = q2
@@ -98,16 +99,6 @@ c  the factor fkt does not need to be applied for dvmp parameterization
 c           fkt  = 2*W_dummy*ppi_mag_cm/(W2_dummy - amp2)
 c           sig0 = fkt*sig0
 
-         elseif (opt2.eq.5) then
-c          below W = 1.8 there is no eta model to match to: return zero
-c          rather than invent a cross section (generation boxes start at 1.8)
-           sig0 = 0.
-           sigu = 0.
-           sigt = 0.
-           sigl = 0.
-           sigi = 0.
-           sigip = 0.
-           asym_p = 0.
          else
            amp2 = 0.93827**2
            amu2 = mesonmass**2
