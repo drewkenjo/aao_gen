@@ -115,7 +115,17 @@ c           sig0 = fkt*sig0
      1           maidsig,sigu,sigt,sigl,sigi,sigip,asym_p,ehel)
            call maid_lee(q2,w,eps,cscm,phicm,opt1,opt2,opt3,
      1           sig0,sigu,sigt,sigl,sigi,sigip,asym_p,ehel)
+c     Rescale ALL structure functions by the DVMP/MAID matching ratio,
+c     not only sig0: the radiative hard-photon integrand (sigma() in
+c     aao_rad) and the phi-modulation terms are built from sigu/sigl/
+c     sigt/sigi, and leaving them unscaled overweights the radiative
+c     tail of the W<1.8 region by 1/ratio (~2-2.5 at Q2=1-2).
            sig0 = sig0*dvmpsig/maidsig
+           sigu = sigu*dvmpsig/maidsig
+           sigt = sigt*dvmpsig/maidsig
+           sigl = sigl*dvmpsig/maidsig
+           sigi = sigi*dvmpsig/maidsig
+           sigip= sigip*dvmpsig/maidsig
          endif
       endif
 c      print *, 'DSIGMA: ',sig0,sigu,sigl,sigt,sigi,sigip,asym_p,ehel

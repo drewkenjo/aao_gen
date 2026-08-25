@@ -1,0 +1,229 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{gray!10},
+  frame=single,
+  breaklines=true
+}
+
+\title{Radiative Corrections with \texttt{aao\_rad} and \texttt{aao\_norad}:\\
+An Example of the Calculation as a Function of $\phi$}
+\author{V.~Kubarovsky}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note describes how to use the two versions of the \texttt{aao\_gen}
+event generator, \texttt{aao\_rad} (with internal radiative effects) and
+\texttt{aao\_norad} (Born-level, non-radiative), to calculate the radiative
+correction factor for exclusive single-pion electroproduction. As a working
+example, the correction is evaluated as a function of the azimuthal angle
+$\phi$ of the hadronic plane. The same procedure applies to any kinematic
+variable ($Q^2$, $W$, $t$, $\cos\theta^*$, \dots).
+\end{abstract}
+
+\section{The generators}
+
+The repository \texttt{aao\_gen} contains two Fortran generators:
+\begin{itemize}
+  \item \texttt{aao\_norad} --- generates events according to the Born
+        (non-radiative) cross section of the chosen physics model
+        (A0, MAID98, MAID2000);
+  \item \texttt{aao\_rad} --- generates events including internal radiative
+        effects (vertex corrections, vacuum polarization, and real photon
+        emission) following the Mo--Tsai formalism applied to the same
+        underlying model.
+\end{itemize}
+
+Both generators use accept--reject sampling, so the output events are
+\emph{unweighted}. At the end of the run each generator prints the
+\textbf{integrated cross section} over the generation region,
+\begin{lstlisting}
+ Integrated cross section = sig_int  sig_sum
+\end{lstlisting}
+computed by Monte Carlo integration as
+\begin{equation}
+  \sigma_{\rm tot} \;=\;
+  \frac{\sum_k \sigma_k}{N_{\rm tries}}\,(4\pi)^2\,
+  \bigl(2\pi\,\Delta Q^2\,\Delta E'\bigr),
+\end{equation}
+i.e.\ the total cross section \emph{within the kinematic limits specified in
+the input file} ($Q^2$ range, scattered-electron energy range, $W$ range).
+
+\section{From event samples to differential cross sections}
+
+Since the events are unweighted, a sample of $N$ events together with the
+integrated cross section $\sigma_{\rm tot}$ fully defines the differential
+cross section in any variable. For a histogram in $\phi$ with bin width
+$\Delta\phi$ and $n_i$ events in bin $i$,
+\begin{equation}
+  \frac{d\sigma}{d\phi}\bigg|_i \;=\;
+  \sigma_{\rm tot}\,\frac{n_i}{N\,\Delta\phi}.
+  \label{eq:dsig}
+\end{equation}
+
+\section{The radiative correction factor}
+
+The radiative correction factor in bin $i$ is defined as the ratio of the
+radiated to the Born differential cross sections,
+\begin{equation}
+  RC(\phi_i) \;=\;
+  \frac{d\sigma_{\rm rad}/d\phi}{d\sigma_{\rm norad}/d\phi}
+  \;=\;
+  \frac{\sigma_{\rm rad}}{\sigma_{\rm norad}}\cdot
+  \frac{n_i^{\rm rad}/N_{\rm rad}}{n_i^{\rm norad}/N_{\rm norad}}.
+  \label{eq:rc}
+\end{equation}
+For equal statistics, $N_{\rm rad}=N_{\rm norad}$ (e.g.\ $100\,000$ events
+each), this reduces to the simple prescription:
+\begin{enumerate}
+  \item fill the \texttt{aao\_norad} histogram $h_{\rm norad}(\phi)$ with
+        weight $1$;
+  \item fill the \texttt{aao\_rad} histogram $h_{\rm rad}(\phi)$ with the
+        constant weight
+        \begin{equation}
+          w \;=\; \frac{\sigma_{\rm rad}}{\sigma_{\rm norad}},
+        \end{equation}
+        where $\sigma_{\rm rad}$ and $\sigma_{\rm norad}$ are the two
+        integrated cross sections printed at the end of the runs;
+  \item divide bin by bin:
+        \begin{equation}
+          RC(\phi) \;=\; \frac{h_{\rm rad}(\phi)}{h_{\rm norad}(\phi)}.
+        \end{equation}
+\end{enumerate}
+
+The overall normalization $\sigma_{\rm rad}/\sigma_{\rm norad}$ carries the
+bulk of the correction (vertex correction, vacuum polarization, soft-photon
+emission), while the bin-by-bin shape ratio adds the kinematic migration
+caused by hard-photon emission.
+
+\section{The internal missing-mass cut in \texttt{aao\_rad} (\texttt{mm\_cut})}
+\label{sec:mmcut}
+
+The \texttt{aao\_rad} input file contains the parameter \texttt{mm\_cut}
+(the line labeled ``a limit on the error in (mm)**2''), which is applied
+\emph{inside the generator, during event generation}:
+\begin{lstlisting}
+if (abs(mm2 - mm_exp) .gt. mm_cut) go to 20   ! reject, regenerate
+sig_tot = sig_tot + sigr                      ! only surviving events count
+\end{lstlisting}
+
+Here \texttt{mm2} is the \emph{experimental} missing mass squared, computed
+the way an experimentalist computes it --- from the nominal beam energy, the
+scattered electron, and the detected hadron (the proton for $\pi^0$/$\eta$,
+the pion for $\pi^+$), \emph{ignoring the radiated photon}. For the $\pi^0$
+channel it is $MM^2(ep\to e'pX)$. The reference value \texttt{mm\_exp} is
+the nominal missing mass squared of the channel: $m^2_{\pi^0}$ for
+\texttt{epirea=1}, $m^2_p\simeq m^2_n$ for \texttt{epirea=3}, $m^2_\eta$
+for \texttt{epirea=5}. When a hard photon is emitted, \texttt{mm2} shifts
+away from \texttt{mm\_exp}; this shift \emph{is} the radiative tail.
+
+Since the rejection happens \emph{before} the cross section is accumulated,
+\textbf{the integrated cross section $\sigma_{\rm rad}$ printed at the end
+of the run is the cross section within the window
+$|MM^2 - MM^2_{\rm exp}| < \texttt{mm\_cut}$}. The parameter therefore
+plays exactly the role of the inelasticity cut $v_{\rm cut}$ in other
+radiative-correction codes: it defines how much of the radiative tail the
+sample --- and $\sigma_{\rm rad}$ --- contains, and hence the size of the
+correction itself.
+
+Practical rules:
+\begin{enumerate}
+  \item The radiative correction is only defined \emph{with respect to a
+        specific missing-mass cut}; \texttt{mm\_cut} must be consistent with
+        the $MM^2$ cut applied to the data.
+  \item Recommended: set \texttt{mm\_cut} \emph{looser} than the analysis
+        cut (the data $MM^2$ is smeared by detector resolution, so events
+        migrate across the cut boundary in both directions), and apply the
+        exact analysis cut offline on the \emph{reconstructed} $MM^2$ after
+        GEMC, with the same code as for the data. The normalization stays
+        correct because
+        $d\sigma = \sigma_{\rm printed}\times n_{\rm pass}/N_{\rm generated}$.
+        Do not set it absurdly loose, or most of the generated events fall
+        in the tail that the analysis cut later removes.
+  \item \textbf{Never} set \texttt{mm\_cut} tighter than the data cut: the
+        part of the radiative tail present in the data would then be missing
+        from the Monte Carlo, and the correction would be underestimated
+        with no way to recover it offline.
+  \item \texttt{aao\_norad} has no radiated photon, so at generator level
+        its $MM^2$ is exact and no such parameter exists there. After
+        detector smearing, apply the same reconstructed-$MM^2$ cut to both
+        samples.
+\end{enumerate}
+
+\section{Applying the correction to data}
+
+The experimental (radiated) cross section is corrected to the Born level by
+dividing by the $RC$ factor evaluated in the same bin with the same cuts:
+\begin{equation}
+  \frac{d\sigma_{\rm Born}}{d\phi}\bigg|_{\rm data}
+  \;=\;
+  \frac{1}{RC(\phi)}\,
+  \frac{d\sigma_{\rm exp}}{d\phi}\bigg|_{\rm data}.
+\end{equation}
+
+\section{Practical remarks}
+
+\begin{itemize}
+  \item \textbf{Identical generation limits.}
+        $\sigma_{\rm tot}$ is integrated over the generation region, so both
+        runs must use exactly the same input limits ($Q^2$, $E'$, $W$
+        ranges); otherwise the ratio $\sigma_{\rm rad}/\sigma_{\rm norad}$ is
+        meaningless.
+  \item \textbf{Reconstruct kinematics as in the data.}
+        For radiated events, $\phi$, $Q^2$, $W$ must be computed from the
+        scattered electron (and detected hadrons), not from the true
+        hadronic-vertex values. The difference between the two is precisely
+        the radiative migration being corrected.
+  \item \textbf{The exclusivity cut defines the correction.}
+        The size of $RC$ depends on how much of the radiative tail the
+        missing-mass (or $W$) cut accepts. The cut applied to the Monte
+        Carlo must match the cut applied to the data exactly; see
+        Sec.~\ref{sec:mmcut} for the internal \texttt{mm\_cut} parameter of
+        \texttt{aao\_rad}.
+  \item \textbf{Generator level vs.\ after detector simulation.}
+        Taking the ratio after GEMC is legitimate: the acceptance largely
+        cancels in the ratio, and the surviving radiation-induced acceptance
+        change is genuinely part of the correction. The cleaner standard
+        split is to take $RC$ from the generator-level ratio with
+        data-equivalent cuts and the acceptance from the radiated sample
+        alone. Either way, do not correct for the acceptance twice.
+  \item \textbf{Bin in the other variables.}
+        $RC$ depends on $Q^2$ and $W$, so an inclusive $RC(\phi)$ is an
+        acceptance-weighted average; evaluate it within the $(Q^2,W)$ or
+        $(Q^2,t)$ bins of the analysis.
+  \item \textbf{Same polarization flag.}
+        \texttt{aao\_rad} modulates the cross section with polarization and
+        interference terms; use the same \texttt{flag\_ehel} in both runs.
+  \item \textbf{Statistics.}
+        With $100\,000$ events and 20 $\phi$ bins one has $\sim 5000$
+        events per bin at generator level, i.e.\ $\sim 2\%$ statistical
+        uncertainty on $RC$ per bin. After detector acceptance the available
+        statistics may be substantially smaller; generate more events if the
+        ratio is formed after GEMC.
+\end{itemize}
+
+\section{Summary}
+
+\begin{equation}
+  \boxed{\;
+  RC(\phi) \;=\;
+  \frac{\sigma_{\rm rad}}{\sigma_{\rm norad}}\cdot
+  \frac{h_{\rm rad}(\phi)}{h_{\rm norad}(\phi)}
+  \qquad\Longrightarrow\qquad
+  \sigma_{\rm Born} \;=\; \frac{\sigma_{\rm exp}}{RC}
+  \;}
+\end{equation}
+where the histograms are filled with equal numbers of unweighted events
+under identical generation limits and identical analysis cuts.
+
+\end{document}

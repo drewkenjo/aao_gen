@@ -407,20 +407,40 @@ C      print *, 'tbl_file = ', trim(data_file)
 C      end
 C------------------------------------------------------------------------
       character*256 function get_maid07_tbl(env_name, fixed_location)
-C     Define the location of the maid07.tbl data.
-C     if env_name is not defined or invalid take the fixed locaytion else take from $env_name      
+C     Locate the maid07 table. Search order:
+C       1) $env_name           - explicit override via environment
+C       2) MAID_TBL_DIR        - repo root baked in at build time (Makefile)
+C       3) ./maid07-PPpi.tbl   - current directory
+C       4) fixed_location      - CLAS group disk (works on ifarm)
+C     The first existing file wins.
       implicit none
       character*(*) env_name, fixed_location
       character*256 env_value
       integer len_env
+      logical fexist
 
       call getenv(env_name, env_value)
       len_env = len_trim(env_value)
-
       if (len_env > 0) then
         get_maid07_tbl = env_value(1:len_env)
-      else
-        get_maid07_tbl = fixed_location
+        return
+      end if
+
+#ifdef MAID_TBL_DIR
+      get_maid07_tbl = MAID_TBL_DIR // '/maid07-PPpi.tbl'
+      inquire(file=get_maid07_tbl, exist=fexist)
+      if (fexist) return
+#endif
+
+      get_maid07_tbl = 'maid07-PPpi.tbl'
+      inquire(file=get_maid07_tbl, exist=fexist)
+      if (fexist) return
+
+      get_maid07_tbl = fixed_location
+      inquire(file=get_maid07_tbl, exist=fexist)
+      if (.not. fexist) then
+        write(6,*) ' get_maid07_tbl: maid07-PPpi.tbl not found;'
+        write(6,*) ' set the environment variable ', env_name
       end if
 
       return

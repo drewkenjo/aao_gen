@@ -8,7 +8,7 @@ aao_rad : $(OBJ) $(OBJC)
 	gfortran  -o build/aao_rad  $(addprefix build/, $(OBJ)) build/$(OBJC) 
 $(OBJ) : %.o: %.F
 	mkdir -p build
-	gfortran -fno-automatic -ffixed-line-length-none -fno-second-underscore -funroll-loops -fomit-frame-pointer -c $< -o build/$@  
+	gfortran -fno-automatic -ffixed-line-length-none -fno-second-underscore -funroll-loops -fomit-frame-pointer -DMAID_TBL_DIR='"$(abspath $(CURDIR)/..)"' -c $< -o build/$@  
 $(OBJC) : %.o: %.c
 	mkdir -p build
 	gcc  -c $< -o build/$@ 

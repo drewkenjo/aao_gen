@@ -59,7 +59,14 @@ c        print *, 'ABORT',ki_mag,kf_mag,q2,w
 
 c         if(w.gt.1.7.and.opt2.eq.1) then
 CVPK         if(w.gt.2.and.opt2.eq.1) then
-         if(w.gt.1.8 .and. opt2.eq.1) then
+c        VPK 2026-08-16: eta (opt2=5) has no MAID channel -- the matching
+c        branch below leaves data_file empty and read_sf_file hangs, which
+c        is why aao eta runs never produced events.  For eta use the DVMP
+c        parameterization EVERYWHERE (no threshold matching): the fit is
+c        the same March-2021 table the other generators use, and eta
+c        production is studied above the resonance region anyway.  VPK:
+c        DVMP applies at ALL W for eta -- no threshold, no zeroing.
+         if((w.gt.1.8 .and. opt2.eq.1) .or. opt2.eq.5) then
            amp2 = 0.93827**2
            amu2 = mesonmass**2
            q2_dummy = q2
@@ -115,7 +122,17 @@ c           sig0 = fkt*sig0
      1           maidsig,sigu,sigt,sigl,sigi,sigip,asym_p,ehel)
            call maid_lee(q2,w,eps,cscm,phicm,opt1,opt2,opt3,
      1           sig0,sigu,sigt,sigl,sigi,sigip,asym_p,ehel)
+c     Rescale ALL structure functions by the DVMP/MAID matching ratio,
+c     not only sig0: the radiative hard-photon integrand (sigma() in
+c     aao_rad) and the phi-modulation terms are built from sigu/sigl/
+c     sigt/sigi, and leaving them unscaled overweights the radiative
+c     tail of the W<1.8 region by 1/ratio (~2-2.5 at Q2=1-2).
            sig0 = sig0*dvmpsig/maidsig
+           sigu = sigu*dvmpsig/maidsig
+           sigt = sigt*dvmpsig/maidsig
+           sigl = sigl*dvmpsig/maidsig
+           sigi = sigi*dvmpsig/maidsig
+           sigip= sigip*dvmpsig/maidsig
          endif
       endif
 c      print *, 'DSIGMA: ',sig0,sigu,sigl,sigt,sigi,sigip,asym_p,ehel

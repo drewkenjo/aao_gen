@@ -110,6 +110,9 @@ c     and make a new version.
       real sigr_max
       real sigr1
       real*8 sig_tot,sig_sum
+      real*8 born_tot,sigb
+      integer*8 ntry_max
+      real csthcm_fix,phicm_fix
       real sigt
       real sigu
       real sigip, asym_p
@@ -462,6 +465,16 @@ c      write(6,*)'seed:',idum,' from start time ',ctime
       itime2	= itime1
       ntries	= 0
       sig_int	= 0.
+c     RC-POINT MODE: fixed hadronic CM point, fixed number of tries
+      open(unit=15,file='point.inp',status='old')
+      read(15,*) csthcm_fix
+      read(15,*) phicm_fix
+      read(15,*) ntry_max
+      close(15)
+      born_tot	= 0.d0
+      write(6,*)' RC POINT MODE: csthcm,phicm,ntry =',
+     &  csthcm_fix,phicm_fix,ntry_max
+
       sig_tot	= 0.
 
 c     Name the output rz file according to meson type and beam energy.
@@ -643,6 +656,8 @@ c     distributed according to the Mo-Tsai integrand.
       ehel = 0      
  20   continue
       ntries	= ntries+1
+      sigb	= 0.d0
+      if (ntries .gt. ntry_max) go to 50
       if(flag_ehel.eq.1) ehel = get_spin(idum)
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       hel       = ehel
@@ -885,8 +900,8 @@ c     choose ek by making a change of variables
       
       if (ek .gt. ekmax)go to 20
 
-      csthcm	= -1.+2.*myran()
-      phicm	= 360.*myran()
+      csthcm	= csthcm_fix
+      phicm	= phicm_fix
       
 c********************************** Ek < Delta ****************************************      
 
@@ -1004,6 +1019,7 @@ c	calculate average differential cross section in the region
 c	from ek=0 to delta, and from cos(thetak)=-1 to 1.
 
 	sigr	= sigr1/delta/4./pi
+	sigb	= signr/delta/4./pi
 	
         if (sigr .gt. 0.) then
           go to 28
@@ -1038,6 +1054,9 @@ c     an event.
       sigr	= mcfac*mpfac*sigr
       sig_ratio	= sigr/sigr_max
       sig_tot	= sig_tot + sigr
+      sigb	= sigb*jacob*mcfac*mpfac
+      born_tot	= born_tot + sigb
+      go to 20
       
 c     Choose the number of times, mcall, to call the routine used
 c     to calculate kinematic quantities for the n-tuple.
@@ -1330,6 +1349,11 @@ c     Do we have enough events in the n-tuple?
 c     Close out the n-tuple file
 
  50   continue
+      write(6,*)' RC_POINT obs,born,ntries:',sig_tot,born_tot,ntries
+      if (born_tot .gt. 0.d0) then
+        write(6,*)' RC_POINT_RESULT ',sig_tot/born_tot
+      endif
+      stop
 Clcs      call hrout(0,icycle,' ')
 Clcs      call hrend('aaoradgen')
 
