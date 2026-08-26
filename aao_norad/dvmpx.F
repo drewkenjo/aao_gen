@@ -46,7 +46,7 @@ c MESONMASS is the mass of the pi0 or eta
      *                       S_T   + EPS*S_L          + 
      * EPS                  *S_TT  * COS(2*PHI_G)     + 
      * SQRT(2.*EPS*(1.+EPS))*S_LT  * COS(PHI_G)       +
-     * HELI*SQRT(2.*EPS*(1.-EPS))*S_LTP * SIN(2*PHI_G)     
+     * HELI*SQRT(2.*EPS*(1.-EPS))*S_LTP * SIN(PHI_G)     
      * ) 
       IF(DVMPX.lt.0.) DVMPX=0.
 

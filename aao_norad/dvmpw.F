@@ -62,14 +62,14 @@ c
       sigma0 = S_T   + EPS*S_L +         
      *   EPS                  *S_TT  * COS(2*PHI_G)   + 
      * SQRT(2.*EPS*(1.+EPS))*S_LT  * COS(PHI_G)     +
-     * HELI*SQRT(2.*EPS*(1.-EPS))*S_LTP * SIN(2*PHI_G)     
+     * HELI*SQRT(2.*EPS*(1.-EPS))*S_LTP * SIN(PHI_G)     
        IF(sigma0 .LT. 0.0) sigma0=0.0     
 c
 c       S_TOT =FLUXW(xb,Q2,E)/(2.*PI)*(
 c     *                       S_T   + EPS*S_L          + 
 c     * EPS                  *S_TT  * COS(2*PHI_G)       + 
 c     * SQRT(2.*EPS*(1.+EPS))*S_LT  * COS(PHI_G)     +
-c     * HELI*SQRT(2.*EPS*(1.-EPS))*S_LTP * SIN(2*PHI_G)     
+c     * HELI*SQRT(2.*EPS*(1.-EPS))*S_LTP * SIN(PHI_G)     
 c     * )
       
 c       IF(DVMPW.LT.0.0) DVMPW=0.
